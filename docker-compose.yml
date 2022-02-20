@@ -1,0 +1,40 @@
+version: '3.7'
+
+volumes:
+  mysql-data:
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  php-httpd:
+    build: 
+      args:
+        user: myuser
+        uid: 1000
+      dockerfile: ./docker/php-httpd/Dockerfile
+    ports:
+        - 8081:80
+    working_dir: /var/www/html/
+    command: sh -c "/usr/sbin/apache2ctl -DFOREGROUND"
+    networks:
+      - app-network
+  
+  mysql-server:
+    image: mysql:5.7
+    platform: linux/x86_64
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/app.cnf:/etc/mysql/mysql.conf.d/app.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=registry_jet
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=user_pass
+    ports:
+      - "3301:3306"
+    networks:
+      - app-network
