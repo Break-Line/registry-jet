@@ -16,8 +16,9 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        $data = Customer::all();
-        return Inertia::render('Customers', ['data' => $data]);
+        return Inertia::render('Customers', [
+            'customers' => Customer::paginate(10)
+        ]);
     }
 
     /**
@@ -27,7 +28,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'email' => 'required|unique:customers|email|max:255',
             'business_name' => 'required|max:255',
             'address' => 'required|max:255',
@@ -36,14 +37,11 @@ class CustomerController extends Controller
             'province' => 'required|max:255',
             'region' => 'required|max:255'
         ]);
-        if ($validator->fails()) {
-            return Inertia::render('Customers', ['errors' => $validator->errors()->all()]);
-        }
   
         Customer::create($request->all());
-  
+
         return redirect()->back()
-            ->with('success', 'Customer Created Successfully.');
+                ->with('success', 'Post Created Successfully.');
     }
   
     /**
@@ -53,8 +51,8 @@ class CustomerController extends Controller
      */
     public function update(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|unique:customers|email|max:255',
+        $request->validate([
+            'email' => 'required|email|max:255|unique:customers,email,'.$request->input('id'),
             'business_name' => 'required|max:255',
             'address' => 'required|max:255',
             'postal_code' => 'required|numeric|digits:5',
@@ -62,9 +60,6 @@ class CustomerController extends Controller
             'province' => 'required|max:255',
             'region' => 'required|max:255'
         ]);
-        if ($validator->fails()) {
-            return Inertia::render('Customers', ['errors' => $validator->errors()->all()]);
-        }
   
         if ($request->has('id')) {
             Customer::find($request->input('id'))->update($request->all());

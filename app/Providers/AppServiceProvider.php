@@ -25,10 +25,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Inertia::share([
+            'errors' => function () {
+                return Session::get('errors')
+                    ? Session::get('errors')->getBag('default')->getMessages()
+                    : (object) [];
+            },
+        ]);
+
         Inertia::share('flash', function () {
             return [
-                'success' => Session::get('success'),
-                'error' => Session::get('error'),
+                'success' => Session::get('success')
             ];
         });
     }
