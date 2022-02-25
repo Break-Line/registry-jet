@@ -58,9 +58,11 @@ RUN composer install && \
     php artisan view:clear && \ 
     php artisan cache:clear && \ 
     php artisan optimize:clear && \
-    php artisan migrate 
-    #php artisan schedule:run
+    php artisan migrate
+    #:fresh --seed
 
-RUN npm install && npm run dev && composer dump-autoload
+RUN npm install && \
+    npm run dev && \
+    composer dump-autoload
 
 EXPOSE 8081
