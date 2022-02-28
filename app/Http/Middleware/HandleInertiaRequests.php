@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Http\Resources\UserCollection;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -37,7 +38,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         return array_merge(parent::share($request), [
-            //
+            'user' => auth()->user() ? new UserCollection(auth()->user()) : null
         ]);
     }
 }

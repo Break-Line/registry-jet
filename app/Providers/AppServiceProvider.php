@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
+use App\Http\Resources\UserCollection;
+use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +38,12 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share('flash', function () {
             return [
                 'success' => Session::get('success')
+            ];
+        });
+
+        Inertia::share('user', function () {
+            return [
+                'user' => new UserCollection(auth()->user())
             ];
         });
     }
