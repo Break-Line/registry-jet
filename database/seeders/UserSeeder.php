@@ -17,7 +17,12 @@ class UserSeeder extends Seeder
         User::factory()
             ->count(1)
             ->create([
-                'email' => 'registryjet@example.org'
+                'email' => 'admin@example.org'
+            ]);
+        User::factory()
+            ->count(1)
+            ->create([
+                'email' => 'user@example.org'
             ]);
     }
 }
