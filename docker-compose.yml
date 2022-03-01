@@ -11,6 +11,7 @@ networks:
 services:
   php-httpd:
     build: 
+      context: .
       args:
         user: myuser
         uid: 1000

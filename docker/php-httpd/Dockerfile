@@ -58,8 +58,8 @@ RUN composer install && \
     php artisan view:clear && \ 
     php artisan cache:clear && \ 
     php artisan optimize:clear && \
-    php artisan migrate && \
-    #php artisan migrate:fresh --seed && \
+    #php artisan migrate && \
+    php artisan migrate:fresh --seed && \
     php artisan assign:rolesAndPermissions
 
 RUN npm install && \
