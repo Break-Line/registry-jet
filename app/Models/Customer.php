@@ -18,4 +18,20 @@ class Customer extends Model
         'created_at' => 'datetime:d-m-Y H:i',
         'updated_at' => 'datetime:d-m-Y H:i'
     ];
+
+    // rules
+    public static function rules ($id=0, $merge=[]) {
+        return array_merge(
+            [
+                'email' => 'required|email|max:255|unique:customers,email' . $id > 0 ? ",$id" : '',
+                'business_name' => 'required|max:255',
+                'address' => 'required|max:255',
+                'postal_code' => 'required|numeric|digits:5',
+                'city' => 'required|max:255',
+                'province' => 'required|max:255',
+                'region' => 'required|max:255'
+            ], 
+            $merge
+        );
+    }
 }

@@ -20,8 +20,11 @@ Route::get('/', function () {
     return Redirect::route('dashboard');
 });
 
-Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->name('dashboard');
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
 
-Route::middleware(['auth:sanctum', 'verified'])->resource('customers', CustomerController::class);
+    Route::post('customers/importXlsx', [CustomerController::class, 'importXlsx'])->middleware(['role:admin']);
+    Route::resource('customers', CustomerController::class);
+});

@@ -23,7 +23,7 @@
                                     Dashboard
                                 </jet-nav-link>
                                 <jet-nav-link :href="route('customers.index')" :active="route().current('customers.index')">
-                                    Clienti
+                                    Customers
                                 </jet-nav-link>
                             </div>
                         </div>
