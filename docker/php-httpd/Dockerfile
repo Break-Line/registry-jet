@@ -14,7 +14,7 @@ RUN apt-get install -y cron curl gnupg2 unzip git libpng-dev libjpeg62-turbo-dev
 	nodejs npm && \
 	docker-php-ext-configure gd && \
     docker-php-ext-configure zip && \
-    docker-php-ext-install zip && \
+    docker-php-ext-install zip gd intl && \
     docker-php-ext-install pdo pdo_mysql
 
 # Install xdebug

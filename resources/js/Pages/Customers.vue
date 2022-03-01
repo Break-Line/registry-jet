@@ -16,6 +16,7 @@
                       </div>
                     </div>
                     <button @click="customerModal.mode = 'save'" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3">Create New Customer</button>
+                    <button v-if="user.data.role[0] == 'admin'" @click="customerModal.mode = 'importCustomers'" class="float-right bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3">Import New Customer(s)</button>
                     <table class="table-fixed w-full">
                         <thead>
                             <tr class="bg-gray-100">
@@ -41,19 +42,42 @@
                                 <td class="border px-4 py-2">{{ row.province }}</td>
                                 <td class="border px-4 py-2">{{ row.region }}</td>-->
                                 <td class="border px-4 py-2">
-                                    <button @click="view(row)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Visualizza</button>
-                                    <button @click="edit(row)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Modifica</button>
-                                    <button @click="deleteRow(row)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Elimina</button>
+                                    <button @click="view(row)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-1 rounded">View</button>
+                                    <button @click="edit(row)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-1 rounded">Edit</button>
+                                    <button @click="deleteRow(row)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mx-1 rounded">Delete</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                     <pagination class="mt-6" :links="customers.links" />
 
+                    <!-- importCustomers modal -->
+                    <DialogModal :show="customerModal.mode === 'importCustomers'" @close="resetModal()">
+                        <template #title>
+                            Import customers
+                        </template>
+                        <template #content>
+                            <form @submit.prevent="importCustomers" ref="importForm">
+                                <input type="file" @input="form.import.selectedFile = $event.target.files[0]" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                                <div v-if="needFormErrors">
+                                    <span v-for="error in errors" :key="error" class="text-red-500 py-4">{{ error }}</span>
+                                </div>
+                                <progress v-if="form.progress" :value="form.progress.percentage" max="100">
+                                {{ form.progress.percentage }}%
+                                </progress>
+                            </form>
+                        </template>
+
+                        <template #footer>
+                            <button @click="$refs.importForm.requestSubmit()" :disabled="isLoading" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirm</button>
+                        </template>
+
+                    </DialogModal>
+
                     <!-- view modal -->
                     <DialogModal :show="customerModal.mode === 'view' && customerModal.data !== null" @close="resetModal()">
                         <template #title>
-                            Visualizza cliente: {{ customerModal.data.email }}
+                            Customer: {{ customerModal.data.email }}
                         </template>
                         <template #content>
                             <div>
@@ -71,15 +95,15 @@
                         </template>
 
                         <template #footer>
-                            <button @click="edit(customerModal.data)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Modifica</button>
-                            <button @click="deleteRow(customerModal.data)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Elimina</button>
+                            <button @click="edit(customerModal.data)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</button>
+                            <button @click="deleteRow(customerModal.data)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
                         </template>
                     </DialogModal>
 
                     <!-- edit modal -->
                     <DialogModal :show="customerModal.mode === 'edit' && customerModal.data !== null" @close="resetModal()">
                         <template #title>
-                            Modifica cliente: {{ customerModal.data.email }}
+                            Edit customer: {{ customerModal.data.email }}
                         </template>
                         <template #content>
                             <div>
@@ -128,7 +152,7 @@
                         </template>
 
                         <template #footer>
-                            <button @click="update(form)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Conferma</button>
+                            <button @click="update(form)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirm</button>
                         </template>
                     </DialogModal>
 
@@ -181,7 +205,7 @@
                         </template>
 
                         <template #footer>
-                            <button @click="save(form)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Conferma</button>
+                            <button @click="save(form)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirm</button>
                         </template>
                     </DialogModal>
                 </div>
@@ -193,49 +217,76 @@
     import AppLayout from '@/Layouts/AppLayout'
     import Pagination from '@/Components/Pagination'
     import DialogModal from '@/Jetstream/DialogModal'
+    import { useForm } from '@inertiajs/inertia-vue3'
+    import { InertiaProgress } from '@inertiajs/progress'
+
     export default {
         components: {
             AppLayout,
             Pagination,
-            DialogModal
+            DialogModal,
+            useForm,
+            InertiaProgress
         },
-        props: ['customers', 'flash', 'errors'],
+        props: ['customers', 'flash', 'errors', 'user'],
+        setup() {
+            InertiaProgress.init();
+        },
         data() {
-            return {
-                customerModal: {
-                    "mode": null,
-                    "data": null
-                },
-                form: {
-                    email: null,
-                    business_name: null,
-                    address: null,
-                    postal_code: null,
-                    city: null,
-                    province: null,
-                    region: null,
-                },
-                needFormErrors: false
-            }
+            return this.initialState();
         },
         methods: {
-            resetModal: function () {
-                this.customerModal.mode = null;
-                this.customerModal.data = null;
-                this.needFormErrors = false;
-                this.form = {
-                    email: null,
-                    business_name: null,
-                    address: null,
-                    postal_code: null,
-                    city: null,
-                    province: null,
-                    region: null,
+            initialState: function () {
+                return {
+                    customerModal: {
+                        "mode": null,
+                        "data": null
+                    },
+                    form: {
+                        email: null,
+                        business_name: null,
+                        address: null,
+                        postal_code: null,
+                        city: null,
+                        province: null,
+                        region: null,
+                        import: useForm({
+                            selectedFile: null
+                        })
+                    },
+                    needFormErrors: false,
+                    isLoading: false
                 }
+            },
+            importCustomers: function () {
+                this.form.import.post('/customers/importXlsx', {
+                    onStart: () => {
+                        this.isLoading = true;
+                    },
+                    onSuccess: () => {
+                        return Promise.all([
+                            this.resetModal()
+                        ]);
+                    },
+                    onError: () => {
+                        return Promise.all([
+                            this.needFormErrors = true
+                        ]);
+                    },
+                    onFinish: () => {
+                        return Promise.all([
+                            this.isLoading = false
+                        ]);
+                    }
+                });
+            },
+            resetModal: function () {
+                this.customerModal.mode = this.initialState().customerModal;
+                this.needFormErrors = false;
+                this.form = this.initialState().form;
             },
             view: function (data) {
                 this.customerModal.data = data;
-                console.log(this.customerModal);
                 this.customerModal.mode = "view";
             },
             save: function (data) {

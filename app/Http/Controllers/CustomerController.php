@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CustomersImport;
+use Maatwebsite\Excel\Exceptions\NoTypeDetectedException;
+use Illuminate\Database\QueryException;
 
 class CustomerController extends Controller
 {
@@ -17,7 +21,7 @@ class CustomerController extends Controller
     public function index()
     {
         return Inertia::render('Customers', [
-            'customers' => Customer::paginate(10)
+            'customers' => Customer::paginate(10),
         ]);
     }
 
@@ -28,20 +32,12 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'email' => 'required|unique:customers|email|max:255',
-            'business_name' => 'required|max:255',
-            'address' => 'required|max:255',
-            'postal_code' => 'required|numeric|digits:5',
-            'city' => 'required|max:255',
-            'province' => 'required|max:255',
-            'region' => 'required|max:255'
-        ]);
+        $request->validate(Customer::rules());
   
         Customer::create($request->all());
 
         return redirect()->back()
-                ->with('success', 'Post Created Successfully.');
+            ->with('success', 'Customer Created Successfully.');
     }
   
     /**
@@ -50,22 +46,16 @@ class CustomerController extends Controller
      * @return Response
      */
     public function update(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email|max:255|unique:customers,email,'.$request->input('id'),
-            'business_name' => 'required|max:255',
-            'address' => 'required|max:255',
-            'postal_code' => 'required|numeric|digits:5',
-            'city' => 'required|max:255',
-            'province' => 'required|max:255',
-            'region' => 'required|max:255'
-        ]);
-  
+    {        
         if ($request->has('id')) {
+            $request->validate(Customer::rules($request->input('id')));
             Customer::find($request->input('id'))->update($request->all());
             return redirect()->back()
-                ->with('success', 'Post Updated Successfully.');
+                ->with('success', 'Customer Updated Successfully.');
         }
+        return redirect()->back()->withErrors([
+            'id'=>'No ID provided.'
+        ]);
     }
   
     /**
@@ -79,5 +69,25 @@ class CustomerController extends Controller
             Customer::find($request->input('id'))->delete();
             return redirect()->back();
         }
+    }
+
+    /**
+     * Import XLSX.
+     *
+     * @return Response
+     */
+    public function importXlsx(Request $request)
+    {
+        try {
+            Excel::import(new CustomersImport, $request->file('selectedFile')->store('temp'), null, \Maatwebsite\Excel\Excel::XLSX);
+        } catch (NoTypeDetectedException $e) {
+            return redirect()->back()->withErrors([
+                'selectedFile'=>'Sorry you are using a wrong format to upload files.'
+            ]);
+        } catch (QueryException $e) {
+            return redirect()->back()->withErrors(['selectedFile' => 'Incorrect file fields.']);
+        }
+        return redirect()->back()
+            ->with('success', 'Customer(s) Imported Successfully.');
     }
 }
