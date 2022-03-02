@@ -67,7 +67,8 @@ class CustomerController extends Controller
     {
         if ($request->has('id')) {
             Customer::find($request->input('id'))->delete();
-            return redirect()->back();
+            return redirect()->back()
+                ->with('success', 'Customer Deleted Successfully.');
         }
     }
 
