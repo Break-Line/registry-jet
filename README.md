@@ -12,6 +12,8 @@ In order to simplify that process, we will install Docker Desktop.
 - Run `docker-compose up`
 - In your browser, visit `localhost:8081`
 
+You can login with `admin@example.org` or `user@example.org` using password `password`
+
 # Enjoy!
 
 
