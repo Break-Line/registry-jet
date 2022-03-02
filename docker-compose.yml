@@ -10,6 +10,8 @@ networks:
 
 services:
   php-httpd:
+    depends_on:
+      - mysql-server
     build: 
       context: .
       args:
@@ -19,7 +21,7 @@ services:
     ports:
         - 8081:80
     working_dir: /var/www/html/
-    command: sh -c "/usr/sbin/apache2ctl -DFOREGROUND"
+    command: sh -c "/usr/sbin/apache2ctl -DFOREGROUND && /var/www/html/wait-for-it.sh mysql-server:3306 --strict --timeout=300 && php artisan migrate:fresh --seed && php artisan assign:rolesAndPermissions"
     networks:
       - app-network
   

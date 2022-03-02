@@ -8,6 +8,10 @@ ARG uid
 #update apache conf
 COPY ./docker/php-httpd/000-default.conf /etc/apache2/sites-available/
 
+#push wait script
+COPY ./docker/php-httpd/wait-for-it.sh /var/www/html/wait-for-it.sh
+RUN chmod +x /var/www/html/wait-for-it.sh
+
 RUN a2enmod rewrite
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y cron curl gnupg2 unzip git libpng-dev libjpeg62-turbo-dev libxml2-dev libzip-dev zip libgmp-dev tzdata \
@@ -57,10 +61,7 @@ RUN composer install && \
     php artisan config:clear && \
     php artisan view:clear && \ 
     php artisan cache:clear && \ 
-    php artisan optimize:clear && \
-    #php artisan migrate && \
-    php artisan migrate:fresh --seed && \
-    php artisan assign:rolesAndPermissions
+    php artisan optimize:clear
 
 RUN npm install && \
     npm run dev && \
