@@ -20,10 +20,10 @@ class Customer extends Model
     ];
 
     // rules
-    public static function rules ($id=0, $merge=[]) {
+    public static function rules ($id='', $merge=[]) {
         return array_merge(
             [
-                'email' => 'required|email|max:255|unique:customers,email' . $id > 0 ? ",$id" : '',
+                'email' => 'required|email|max:255|unique:customers,email' . ",$id",
                 'business_name' => 'required|max:255',
                 'address' => 'required|max:255',
                 'postal_code' => 'required|numeric|digits:5',
