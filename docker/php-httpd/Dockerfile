@@ -57,14 +57,9 @@ chmod 700 /var/www/html
 #use created user
 USER $user
 
-RUN composer install && \
-    php artisan config:clear && \
-    php artisan view:clear && \ 
-    php artisan cache:clear && \ 
-    php artisan optimize:clear
+RUN composer install
 
 RUN npm install && \
-    npm run dev && \
-    composer dump-autoload
+    npm run dev
 
 EXPOSE 8081
