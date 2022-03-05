@@ -21,6 +21,8 @@ You can login with `admin@example.org` or `user@example.org` using password `pas
 
 In Registry Jet the debug comes out of the box. You will just need to install the XDebug extension for your IDE and then listen to 9003 port.
 
+#### Using VSCode:
+
 Create a folder named `.vscode` in the project's root directory, and then create a file named `launch.json` inside it.
 You can use this simple `launch.json` file in order to get debug working:
 
