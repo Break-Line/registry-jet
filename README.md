@@ -1,5 +1,8 @@
-# registry-jet
+# Registry Jet
 
+Registry Jet is a modern registry web app containerized with Docker.
+
+The project is using Laravel 8 under JetStream and Vue 3 with InertiaJs.
 
 ### Installation:
 
