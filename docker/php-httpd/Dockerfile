@@ -8,10 +8,6 @@ ARG uid
 #update apache conf
 COPY ./docker/php-httpd/000-default.conf /etc/apache2/sites-available/
 
-#push wait script
-#COPY ./docker/php-httpd/wait-for-it.sh /var/www/html/wait-for-it.sh
-#RUN chmod +x /var/www/html/wait-for-it.sh
-
 COPY /docker/php-httpd/scripts/start.sh /usr/local/bin/start.sh
 
 
