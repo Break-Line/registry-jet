@@ -1,5 +1,3 @@
-version: '3.7'
-
 volumes:
   mysql-data:
 
@@ -21,19 +19,7 @@ services:
     ports:
         - 8081:80
     working_dir: /var/www/html/
-    command: >
-      bash -c "cd /var/www/html
-      && ./wait-for-it.sh mysql-server:3306 --strict --timeout=300
-      -- php artisan migrate:fresh --seed 
-      && php artisan assign:rolesAndPermissions
-      && php artisan key:generate
-      && php artisan config:clear
-      && php artisan view:clear
-      && php artisan cache:clear
-      && php artisan optimize:clear
-      && composer dump-autoload
-      && rm wait-for-it.sh
-      && /usr/sbin/apache2ctl -DFOREGROUND"
+    command: ["/usr/local/bin/start.sh"]
     networks:
       - app-network
   

@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.1-apache
 
 ENV TZ="Europe/Rome"
 
@@ -9,8 +9,11 @@ ARG uid
 COPY ./docker/php-httpd/000-default.conf /etc/apache2/sites-available/
 
 #push wait script
-COPY ./docker/php-httpd/wait-for-it.sh /var/www/html/wait-for-it.sh
-RUN chmod +x /var/www/html/wait-for-it.sh
+#COPY ./docker/php-httpd/wait-for-it.sh /var/www/html/wait-for-it.sh
+#RUN chmod +x /var/www/html/wait-for-it.sh
+
+COPY /docker/php-httpd/scripts/start.sh /usr/local/bin/start.sh
+
 
 RUN a2enmod rewrite
 RUN apt-get update && apt-get upgrade -y
@@ -23,6 +26,7 @@ RUN apt-get install -y cron curl gnupg2 unzip git libpng-dev libjpeg62-turbo-dev
 
 # Install xdebug
 RUN docker-php-source extract \
+    && pecl channel-update pecl.php.net \
     && pecl install xdebug \
     && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)\n" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "[xdebug]" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
