@@ -5,11 +5,10 @@ ENV TZ="Europe/Rome"
 ARG user
 ARG uid
 
+COPY ./docker/php-httpd/scripts/start.sh /usr/local/bin/
+
 #update apache conf
 COPY ./docker/php-httpd/000-default.conf /etc/apache2/sites-available/
-
-COPY /docker/php-httpd/scripts/start.sh /usr/local/bin/start.sh
-
 
 RUN a2enmod rewrite
 RUN apt-get update && apt-get upgrade -y
@@ -61,5 +60,5 @@ RUN composer install
 
 RUN npm install && \
     npm run dev
-
+    
 EXPOSE 8081
